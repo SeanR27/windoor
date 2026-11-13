@@ -1,0 +1,41 @@
+# This file declares backend tooling and dependencies; no application code lives here.
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Keep the package metadata minimal until the backend is implemented.
+[project]
+name = "windoor-backend"
+version = "0.0.0"
+description = "Architecture-only backend for the Windoor modular monolith."
+requires-python = ">=3.11"
+dependencies = [
+    "alembic>=1.14",
+    "fastapi>=0.115",
+    "pydantic-settings>=2.7",
+    "sqlalchemy>=2.0",
+    "uvicorn[standard]>=0.34",
+]
+
+[project.optional-dependencies]
+# Test and lint tools are optional so production installs stay small.
+dev = [
+    "httpx>=0.28",
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.9",
+]
+
+[tool.hatch.build.targets.wheel]
+# The application package is importable from the backend directory.
+packages = ["app"]
+
+[tool.pytest.ini_options]
+# Keep discovery scoped to backend tests when implementation begins.
+testpaths = ["tests"]
+
+[tool.ruff]
+# Use a modern Python baseline for linting and formatting.
+target-version = "py311"
+line-length = 100

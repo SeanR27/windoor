@@ -1,0 +1,1496 @@
+WOMEN'S WINTER INDOOR DOUBLES TENNIS LEAGUE
+TEAM MANAGEMENT WEB APPLICATION
+Product Description and Initial Functional Specification
+
+Document status: Initial working specification
+Purpose: Product reference for implementation
+Audience: Product owner, developers, designers, and league administrators
+
+======================================================================
+1. PRODUCT OVERVIEW
+======================================================================
+
+1.1 Product summary
+
+The application is a web-based team management and league operations platform for a Women's Winter Indoor Doubles Tennis League.
+
+Its central purpose is to help team captains manage their teams and plan weekly doubles lineups while enforcing the league's player-strength, court-assignment, and scoring rules.
+
+The application will also provide league schedules, team and player information, match results, player power calculations, statistics, standings, and administrative tools.
+
+The league is organized into multiple skill-based divisions. Each division operates independently, with its own teams, schedule, match day, standings, and statistics.
+
+The application is intended to begin with the core league and team-management workflows. Additional capabilities can be developed incrementally as the league uses the system and requirements become clearer.
+
+1.2 Primary objectives
+
+- Give each team a private dashboard for its own players, schedule, matches, and team information.
+- Give the team's two captains equal authority to manage the team.
+- Help captains build valid weekly lineups across four courts.
+- Calculate player power and Power Per Game (PPG) consistently.
+- Enforce assigned-court eligibility and the court-to-court PPG ordering rule.
+- Support the league's simultaneous lineup exchange process.
+- Record match scores and calculate team points.
+- Maintain player, team, match, and division statistics.
+- Give administrators league-wide visibility and the ability to manage rules, records, and exceptions.
+- Keep team and player information appropriately isolated through role-based access control.
+
+1.3 Product scope
+
+The initial product should prioritize:
+
+- Authentication and authorization.
+- Seasons and divisions.
+- Teams, players, and captains.
+- Rosters and roster deadlines.
+- Assigned courts and assigned-court deadlines.
+- Schedules and home/away matchups.
+- Weekly lineup planning, validation, and locking/exchange.
+- Match score entry.
+- Team point calculations and penalties.
+- Player power and PPG calculations.
+- Team and player dashboards.
+- Administrative management and audit history.
+
+Statistics, exports, and other quality-of-life features should be included where they are practical, but should not delay implementation of the core workflows.
+
+======================================================================
+2. LEAGUE STRUCTURE AND SEASON FORMAT
+======================================================================
+
+2.1 Divisions
+
+- The league contains multiple divisions.
+- Divisions are based on skill level.
+- Each division operates independently.
+- Teams only compete against other teams in the same division.
+- Each division has its own schedule, match day, standings, and statistics.
+- Teams do not move between divisions between seasons.
+- The approximate number of teams is 10 per division.
+
+2.2 Seasons
+
+- A season consists of 18 match weeks.
+- The schedule is established and known before the season begins.
+- Every team plays every other team in its division twice during the season.
+- One of the two matches is hosted by the first team, and the other is hosted by the opposing team.
+- There are no playoffs, semifinals, finals, or tournament brackets.
+- Each division may have a different regular match day of the week.
+- All teams within a division play on the same day of the week.
+- All four courts in a team match are played simultaneously.
+
+For a division of 10 teams, a double round-robin schedule produces 18 matches per team, which corresponds to the 18-week season.
+
+2.3 Clubs and home matches
+
+- Each team is associated with a club.
+- The home team hosts the match at its club.
+- The host team is responsible for entering the match score.
+- Each pair of teams meets twice: once at each team's club.
+
+2.4 Match scheduling and rescheduling
+
+- Match dates are determined by the season schedule.
+- Matches may only be rescheduled due to weather or a power outage.
+- The home team's captain makes the decision to reschedule.
+- A postponed match must be assigned a new date; it is not simply cancelled without rescheduling.
+- The application should retain the original scheduled date and record the revised date, reason, authorizing captain, and rescheduling history.
+
+2.5 Configurable league settings
+
+At minimum, the following should be configurable rather than hard-coded:
+
+- Roster registration deadline.
+- Assigned-court change deadline.
+- Season dates and match-week dates.
+- Division match day.
+- Relevant lineup and scoring rule settings, where appropriate.
+
+The roster deadline and assigned-court deadline are separate league-wide settings. Their actual dates have not yet been determined.
+
+======================================================================
+3. USERS, ROLES, AND ACCESS CONTROL
+======================================================================
+
+3.1 User accounts
+
+- Every player has an individual login account.
+- Players cannot belong to more than one team.
+- A team has exactly two captains.
+- Both captains have equal rights and authority.
+- Captains are also players on their teams.
+- Administrators can access all league information and management capabilities.
+
+3.2 Player role
+
+Players can:
+
+- Sign in to their own account.
+- Access their own team's dashboard.
+- View their team's roster and relevant team information.
+- View their own player profile, power, PPG, and performance history.
+- View their team's schedule, match results, standings, and statistics as permitted by the product's visibility rules.
+
+Players cannot:
+
+- Access another team's private dashboard.
+- Manage team rosters or assigned courts.
+- Prepare or manage official team lineups unless they also have the captain role.
+
+3.3 Captain role
+
+Captains inherit player capabilities and can additionally:
+
+- Create player accounts for new players on their team.
+- Add and remove players before the roster deadline.
+- Edit player information.
+- Change player assigned courts before the assigned-court deadline.
+- View detailed performance history for their own players.
+- Prepare weekly lineups.
+- Validate lineups against league rules.
+- Save lineup drafts.
+- Lock and exchange lineups.
+- View opposing teams' permitted information.
+- Download or print team rosters.
+- Export match lineups.
+- Manage other available team-level tools.
+
+Captains cannot:
+
+- Invite an already registered user to join their team.
+- Transfer a player from another team.
+- Modify a lineup after it has been exchanged and locked.
+- View another team's private lineup drafts.
+- Access another team's management tools.
+
+3.4 Administrator role
+
+All administrators have the same capabilities. There is no currently required distinction between regular administrators and super-administrators.
+
+Administrators can:
+
+- View and manage all divisions, seasons, teams, players, captains, and matches.
+- Create and configure seasons and divisions.
+- Create and manage teams and club associations.
+- Create and manage player accounts.
+- Manage team membership and captains.
+- Configure season dates and league-wide deadlines.
+- Create, edit, and review schedules.
+- View all team dashboards and lineup drafts.
+- Review lineups and rule violations.
+- Review and correct match scores.
+- Apply point adjustments and penalties.
+- Review and, where authorized, correct player power records.
+- View league-wide and division-specific statistics.
+- Review audit logs and administrative history.
+
+3.5 Opponent visibility
+
+Captains can view a limited, read-only version of other teams' dashboards.
+
+Proposed visible information:
+
+- Team name, division, and club.
+- Current player roster.
+- Player profiles and PPG.
+- Player performance history and statistics.
+- Team schedule and previous match results.
+- Team standings and statistics.
+- Locked lineups after the lineup exchange.
+
+Information that must remain private from opposing captains:
+
+- Lineup drafts.
+- Future lineup selections before exchange.
+- Captain-only team management tools.
+- Internal team notes.
+- Other private or administrative information.
+
+Whether assigned courts should be visible to opposing captains remains undecided.
+
+Players who are not captains do not receive access to other teams' dashboards or opponent roster information.
+
+Authorization must be enforced by the backend, not only by hiding interface elements. A user must not be able to access another team's private information by guessing or changing a URL or API identifier.
+
+======================================================================
+4. PLAYER PROFILES AND ROSTER MANAGEMENT
+======================================================================
+
+4.1 Player information
+
+The application should store the information necessary to identify, authenticate, and manage players.
+
+Confirmed relevant fields:
+
+- First name.
+- Last name.
+- Email address.
+- Profile picture, if supported.
+- Team membership.
+- Assigned court.
+- Total power.
+- Games played.
+- Power Per Game (PPG).
+- Match and performance history.
+- Account status.
+
+The following information is explicitly not required for the initial product:
+
+- Date of birth.
+- Tennis experience.
+- Preferred playing partner.
+- Player biography.
+- Emergency contact.
+
+Additional personal information should not be collected without a clear product requirement.
+
+4.2 Roster management
+
+- Each team maintains a roster of players.
+- Captains can create player accounts and manage their own roster before the roster deadline.
+- Captains can add and remove players before the deadline.
+- The roster deadline is league-wide and configurable.
+- Once the deadline passes, the roster is frozen.
+- Players cannot join or leave a team after the deadline.
+- Players cannot transfer between teams.
+- Weekly lineups can still vary after the roster is frozen.
+- A player may belong to only one team.
+
+The application should prevent roster changes after the deadline, except where an administrator explicitly authorizes an exception. Whether exceptions will be allowed in practice is not yet defined.
+
+4.3 Assigned courts
+
+Every player has an assigned court, selected by the team's captains.
+
+- Assigned courts range from 1 through 4.
+- Captains can choose assigned courts as they see fit.
+- Assigned courts cannot be changed after the assigned-court deadline.
+- The assigned-court deadline is a configurable league-wide setting.
+- Assigned court is distinct from the court on which the player actually plays in a particular week.
+
+A player may play on their assigned court or an adjacent court, subject to the court range:
+
+Assigned court 1: eligible for Courts 1 and 2.
+Assigned court 2: eligible for Courts 1, 2, and 3.
+Assigned court 3: eligible for Courts 2, 3, and 4.
+Assigned court 4: eligible for Courts 3 and 4.
+
+Eligibility is restricted to the four courts that exist. For example, a player assigned Court 1 cannot play Court 0.
+
+The assigned court is a continuing player/team setting. The actual playing court is a weekly lineup assignment.
+
+======================================================================
+5. PLAYER POWER AND POWER PER GAME
+======================================================================
+
+5.1 Purpose
+
+The league uses a player power system to represent player strength and prevent players from being placed on courts in a way that violates the league's competitive balance rules.
+
+Lower PPG indicates a stronger player. Higher PPG indicates a weaker player.
+
+5.2 Power earned per match
+
+A player who participates in a match earns power according to the court on which they played and the match result.
+
+Power earned:
+
+- Win: 1 × court number.
+- Tie: 1.25 × court number.
+- Loss: 1.5 × court number.
+
+Examples:
+
+Court 1:
+- Win: 1 power.
+- Tie: 1.25 power.
+- Loss: 1.5 power.
+
+Court 2:
+- Win: 2 power.
+- Tie: 2.5 power.
+- Loss: 3 power.
+
+Court 3:
+- Win: 3 power.
+- Tie: 3.75 power.
+- Loss: 4.5 power.
+
+Court 4:
+- Win: 4 power.
+- Tie: 5 power.
+- Loss: 6 power.
+
+5.3 Power Per Game calculation
+
+PPG is a simple arithmetic average based only on the number of matches/games the individual player has played.
+
+PPG = Total Power Earned / Games Played
+
+The calculation is individual to each player.
+
+- A player's games-played count increases when they participate in a qualifying match.
+- A player who does not play does not receive power and does not have their PPG recalculated from a new match.
+- Player power is not calculated from the team's total results.
+- Win, tie, and loss results determine the power earned for each participating player.
+- Lower PPG represents a stronger player.
+
+The precise handling of administrative power adjustments and historical recalculation should be designed so that the application can preserve an accurate record of how each player's current PPG was produced.
+
+5.4 Match result used for player power
+
+The currently confirmed result classification is:
+
+- Win: a team wins 2 sets.
+- Tie: each team wins 1 set.
+- Loss: the opposing team is the winner.
+
+The treatment of an unfinished match where one team has won one set and leads an unfinished second set when time expires is not yet determined. This must remain a configurable or explicitly unresolved business rule until the league confirms it.
+
+5.5 Court-to-court PPG rule
+
+Each weekly lineup consists of four courts, with two players per court.
+
+For each court, calculate the combined PPG of its two players:
+
+Court combined PPG = Player A PPG + Player B PPG
+
+The combined PPG values must increase strictly from Court 1 to Court 4:
+
+Court 1 combined PPG < Court 2 combined PPG
+Court 2 combined PPG < Court 3 combined PPG
+Court 3 combined PPG < Court 4 combined PPG
+
+Equivalently:
+
+Court 1 < Court 2 < Court 3 < Court 4
+
+This is a strict inequality. Equal combined PPG values on adjacent courts are invalid.
+
+The comparison is between the four doubles combinations on the same team, not between the two opposing teams.
+
+5.6 Lineup validation
+
+A valid lineup must satisfy all of the following:
+
+- Exactly 8 players are selected.
+- Exactly 2 players are assigned to each of the 4 courts.
+- No player appears more than once in the lineup.
+- Every selected player belongs to the team.
+- Every selected player is eligible to play on the selected court based on their assigned court.
+- The combined PPG values satisfy the strict ascending court order.
+- The lineup is not modified after it is locked/exchanged.
+
+The application should calculate combined PPG automatically as players are assigned.
+
+It should clearly identify invalid courts and explain the reason for each violation. Validation should happen before the lineup can be finalized.
+
+5.7 Effect of a lineup violation
+
+The normal league penalty for a lineup violation is that the team does not receive the points it earned on the violating court.
+
+For player power:
+
+- A player affected by a lineup violation receives no change to their PPG.
+- Their existing PPG remains unchanged.
+- The application must not apply the normal power update to a player whose result is invalidated by the lineup violation.
+
+The exact treatment of the opposing team's player power on a court where the other team has a lineup violation has not yet been explicitly specified and should be confirmed before implementation.
+
+======================================================================
+6. WEEKLY LINEUP PLANNING AND EXCHANGE
+======================================================================
+
+6.1 General workflow
+
+Each week, two teams face each other. Each team prepares a lineup of 8 players:
+
+- 2 players on Court 1.
+- 2 players on Court 2.
+- 2 players on Court 3.
+- 2 players on Court 4.
+
+All four courts play at the same time.
+
+A player may play on an adjacent court to their assigned court, provided they satisfy the assigned-court eligibility rule.
+
+Once the lineup has been exchanged, players cannot switch courts and captains cannot change the lineup.
+
+6.2 Lineup drafting
+
+Each captain should have a private lineup planning workspace.
+
+The workspace should support:
+
+- Viewing the team's roster.
+- Viewing each player's assigned court.
+- Viewing each player's PPG.
+- Selecting players for each court.
+- Assigning two players to each court.
+- Viewing combined court PPG.
+- Real-time validation of court eligibility.
+- Real-time validation of the court-to-court PPG rule.
+- Clear explanations of invalid assignments.
+- Saving an incomplete lineup as a draft.
+- Reopening and editing a draft before exchange.
+- Viewing lineup completeness and validation status.
+
+Captains should be able to prepare lineups without exposing drafts to the opposing team.
+
+6.3 Lineup exchange
+
+The league currently exchanges lineups physically, with both captains seeing the opposing lineup at the same time.
+
+The application may provide an optional digital exchange feature:
+
+1. Each captain privately prepares their lineup.
+2. Each captain finalizes and locks their own lineup.
+3. Neither captain can see the opponent's draft before the exchange.
+4. Once both captains have confirmed readiness, both lineups are revealed simultaneously.
+5. Both lineups become locked and cannot be changed by captains.
+6. The exchanged lineup is retained for the match record.
+
+The digital exchange should preserve simultaneous reveal. It must not allow one captain to inspect the opponent's lineup before committing their own.
+
+The application should also support the league's existing physical exchange process. Digital exchange is an optional capability, not a prerequisite for the initial product.
+
+6.4 Lineup history
+
+The application should retain the final exchanged lineup for each team and match.
+
+The final lineup should record:
+
+- Team.
+- Match.
+- Week.
+- Player on each court.
+- Assigned court of each player at the time of exchange.
+- Player PPG used for validation.
+- Combined PPG for each court.
+- Lock/exchange timestamp.
+- Captain or captains who confirmed the lineup.
+- Validation result.
+
+Drafts must remain private to the team and administrators. Opposing captains must not be able to access drafts.
+
+======================================================================
+7. MATCH FORMAT AND SCORING
+======================================================================
+
+7.1 Match structure
+
+Each weekly team matchup consists of four doubles matches, one on each court.
+
+- Court 1 is the highest level.
+- Court 4 is the lowest level.
+- Each court plays a maximum of 3 sets.
+- Each court has a maximum duration of 2 hours.
+- All four courts play simultaneously.
+
+7.2 Points for completed sets
+
+For a completed set:
+
+- The winning team earns 2 points.
+- The losing team earns 0 points.
+
+7.3 Points for a set stopped by time
+
+If a set is stopped because the two-hour match time expires:
+
+- If one team is ahead by 2 or more games, that team earns 1 point.
+- If the teams are tied, each team earns 0.5 points.
+- If the teams have a 1-game differential, each team earns 0.5 points.
+
+7.4 Maximum points
+
+The maximum points available to one team on one court are 6:
+
+3 sets × 2 points per set = 6 points.
+
+The maximum points available to one team in a weekly matchup are 24:
+
+4 courts × 6 points per court = 24 points.
+
+7.5 Match score entry
+
+The host team captain enters the match score.
+
+The application should store the individual set scores and calculate the points awarded automatically. It should not rely exclusively on captains manually entering a final point total.
+
+The score-entry interface should support the three-set maximum and the two-hour time-limit outcome.
+
+7.6 Team weekly points
+
+The application should calculate each team's weekly points by summing the points awarded across all four courts, after applying any relevant penalties or administrative adjustments.
+
+The opposing team should have its own independently calculated points.
+
+7.7 Lineup violation penalty
+
+Under the normal procedure:
+
+- A team that violates lineup rules forfeits the points it earned on the violating court.
+- Other courts are not automatically penalized if their lineups are valid.
+- Administrators may apply a different adjustment if they determine it is necessary.
+
+7.8 Administrative point adjustments and penalties
+
+Administrators may apply point adjustments or penalties for lineup violations, coaching, or other league infractions.
+
+The system should support:
+
+- Point deductions.
+- Point additions.
+- Custom point adjustments.
+- Adjustments to an individual court result or the overall match total, as appropriate.
+- A reason or explanation.
+- The administrator who made the adjustment.
+- Date and time of the adjustment.
+- The original value and adjusted value.
+- An audit history of changes.
+
+For lineup violations, the standard procedure is the forfeiture of points earned on the violating court. Administrators retain the ability to apply a different penalty when necessary.
+
+======================================================================
+8. MATCH RESULTS, POWER UPDATES, AND DATA INTEGRITY
+======================================================================
+
+After a match result is entered and accepted, the application should:
+
+1. Store the match and court results.
+2. Calculate points for each set.
+3. Calculate the points awarded to each team on each court.
+4. Apply any lineup penalties and administrative adjustments.
+5. Calculate the match result for player power purposes.
+6. Determine the power earned by each eligible player.
+7. Update each player's total power and games played.
+8. Recalculate each affected player's PPG.
+9. Update team and division statistics.
+10. Retain the historical match and calculation records.
+
+The system should prevent accidental duplicate power awards if a score is edited, re-entered, or processed more than once.
+
+Corrections to a match result should be traceable. The application should retain enough information to reverse or recalculate affected player and team statistics without double-counting.
+
+The application should distinguish between:
+
+- Raw score entered by the host captain.
+- Calculated set points.
+- Calculated court points.
+- Penalties and administrative adjustments.
+- Final awarded team points.
+- Player power calculations.
+
+======================================================================
+9. TEAM DASHBOARDS
+======================================================================
+
+Each team has its own dashboard. Players and captains can access only their own team's private dashboard.
+
+The dashboard should provide relevant information in a clear, navigable layout.
+
+9.1 Team overview
+
+Potential contents:
+
+- Team name.
+- Division.
+- Club.
+- Captains.
+- Current season.
+- Current week.
+- Upcoming opponent.
+- Recent match result.
+- Current division standing.
+- Accumulated team points.
+- Team roster summary.
+
+9.2 Match weeks and schedule
+
+Each team dashboard should show the team's match weeks across the season.
+
+For each week, display:
+
+- Week number.
+- Match date.
+- Opponent.
+- Home or away status.
+- Match location/club.
+- Match status.
+- Final score when available.
+- Link to match details.
+
+9.3 Player roster
+
+Display the team's players and relevant player information:
+
+- Name.
+- Assigned court.
+- PPG.
+- Total power.
+- Games played.
+- Relevant performance statistics.
+
+Captains should have controls for roster management and assigned-court changes when the relevant deadlines permit them.
+
+9.4 Opponents
+
+Captains can access limited, read-only opponent information, subject to the visibility rules in Section 3.5.
+
+9.5 Lineup planner
+
+The lineup planner should be a prominent team feature and should provide the tools described in Section 6.
+
+9.6 Team statistics
+
+The dashboard may show:
+
+- Total league points.
+- Weekly points.
+- Court-by-court points.
+- Match wins, ties, and losses.
+- Home and away performance.
+- Recent results.
+- Player performance summaries.
+
+Statistics must be scoped to the appropriate season and division.
+
+======================================================================
+10. PLAYER DASHBOARDS AND STATISTICS
+======================================================================
+
+Each player should have an individual profile and performance view.
+
+Potential statistics:
+
+- Current PPG.
+- Total power earned.
+- Games played.
+- Match wins, ties, and losses.
+- Power earned by court.
+- Historical PPG progression.
+- Match-by-match performance.
+- Season-by-season performance, where applicable.
+
+Player statistics should be calculated from the player's actual participation and recorded results.
+
+A player who does not play in a given week should not receive power for that week.
+
+Statistics should clearly distinguish current-season values from historical values.
+
+======================================================================
+11. DIVISION STANDINGS AND LEAGUE STATISTICS
+======================================================================
+
+Each division has independent standings and statistics.
+
+The application should support:
+
+- Division standings.
+- Team points by week.
+- Total team points.
+- Match results.
+- Team wins, ties, and losses.
+- Home and away results.
+- Court-level performance.
+- Player statistics within the division.
+
+The exact standings tie-breaker rules have not yet been specified. The application should not invent tie-breakers. They should be configurable or added after the league confirms them.
+
+There are no playoffs or tournament brackets.
+
+======================================================================
+12. ADMINISTRATOR DASHBOARD
+======================================================================
+
+The administrator dashboard should provide league-wide management.
+
+Suggested modules:
+
+12.1 Seasons
+- Create and edit seasons.
+- Configure season start and end dates.
+- Configure match weeks.
+- Set roster and assigned-court deadlines.
+- Activate or archive seasons.
+
+12.2 Divisions
+- Create and edit divisions.
+- Configure division match days.
+- Associate teams with divisions.
+- View division-specific standings and statistics.
+
+12.3 Teams
+- Create and edit teams.
+- Associate teams with clubs and divisions.
+- Designate the two captains.
+- View team rosters, lineups, matches, and statistics.
+
+12.4 Players
+- Create and edit player accounts.
+- Manage team membership.
+- View player profiles and history.
+- Review power calculations.
+- Correct records when authorized.
+
+12.5 Schedules
+- Create or edit schedules.
+- Assign home and away teams.
+- Validate that each pair of teams plays twice.
+- Validate that each pair has one home and one away match.
+- Track rescheduled matches.
+
+12.6 Matches
+- View all matches.
+- Review scores and court results.
+- Correct match records.
+- Review lineup validation.
+- Review penalties and adjustments.
+
+12.7 Scoring and rules
+- Configure relevant scoring settings.
+- Review player power calculations.
+- Review lineup violations.
+- Apply point adjustments and penalties.
+- Record explanations for administrative decisions.
+
+12.8 Audit logs
+- View important user and administrative actions.
+- Track changes to rosters, assigned courts, schedules, lineups, scores, and penalties.
+- Identify the user who performed an action and when it occurred.
+
+All administrators have the same permissions in the initial design.
+
+======================================================================
+13. NOTIFICATIONS AND COMMUNICATION
+======================================================================
+
+Notifications are a potential supporting feature. The exact notification channels and requirements have not yet been established.
+
+Potential notifications include:
+
+- Upcoming match reminders.
+- Schedule changes.
+- Match rescheduling.
+- Roster deadline reminders.
+- Assigned-court deadline reminders.
+- Lineup preparation reminders.
+- Lineup exchange readiness.
+- Match score entry reminders.
+- Match result availability.
+
+The initial implementation can prioritize in-app notifications. Email notifications may be added if needed.
+
+The application should not assume that a notification is a substitute for an official league decision or lineup exchange.
+
+======================================================================
+14. REPORTING AND EXPORTS
+======================================================================
+
+Confirmed captain capabilities:
+
+- Download or print team rosters.
+- Export match lineups.
+
+Potential administrator exports:
+
+- Team rosters.
+- Division schedules.
+- Match results.
+- Standings.
+- Player statistics.
+- Power/PPG history.
+- Administrative point adjustments.
+
+Exports should respect user permissions. Captains should only be able to export information they are authorized to access.
+
+======================================================================
+15. SECURITY, AUTHORIZATION, AND AUDITABILITY
+======================================================================
+
+15.1 Authentication
+
+- Every player has an individual login.
+- Authentication is handled by the backend.
+- Passwords must be securely hashed; plaintext passwords must never be stored.
+- Authentication and session/token handling should follow established security practices.
+
+15.2 Authorization
+
+The backend must enforce role and team-level permissions.
+
+Examples:
+
+- A player can access their own team information.
+- A captain can manage their own team.
+- A captain can view permitted opponent information but not opponent drafts.
+- An administrator can access all league information.
+- A user cannot gain access to another team's private information by changing a URL, request parameter, or resource identifier.
+
+15.3 Data integrity
+
+The application should enforce important business rules in backend services and database constraints where appropriate.
+
+Examples:
+
+- A player belongs to no more than one team at a time.
+- A team has two captains.
+- A weekly lineup has exactly eight distinct players when finalized.
+- Each court has exactly two players in a finalized lineup.
+- A player cannot appear on multiple courts in one lineup.
+- A player must be eligible for their selected court.
+- Court combined PPG values must be strictly increasing.
+- Locked lineups cannot be modified by captains.
+- Frozen rosters cannot be changed by captains.
+- Assigned courts cannot be changed after the configured deadline.
+- Power updates must not be duplicated.
+
+15.4 Auditability
+
+Important actions should be recorded, including:
+
+- Roster additions and removals.
+- Player account creation and edits.
+- Assigned-court changes.
+- Lineup creation, locking, and exchange.
+- Match score entry and correction.
+- Administrative penalties and point adjustments.
+- Schedule changes and rescheduling.
+- Changes to league settings.
+
+Audit records should include the actor, action, affected record, timestamp, and relevant before/after values where practical.
+
+======================================================================
+16. TECHNICAL ARCHITECTURE AND TECHNOLOGY STACK
+======================================================================
+
+16.1 Architecture
+
+The application will use a modular monolithic architecture.
+
+The backend should be organized into cohesive modules or domains rather than being implemented as one large, tightly coupled codebase.
+
+Potential backend modules:
+
+- Authentication and users.
+- Seasons.
+- Divisions.
+- Teams.
+- Players.
+- Rosters.
+- Assigned courts.
+- Schedules.
+- Lineups.
+- Lineup validation.
+- Matches.
+- Scoring.
+- Player power.
+- Statistics.
+- Notifications.
+- Administration.
+- Audit logs.
+
+Modules may share one application and database while maintaining clear responsibilities and interfaces.
+
+16.2 Frontend
+
+- React JS.
+- Tailwind CSS.
+- TanStack libraries.
+
+The exact TanStack packages have not yet been specified. Likely candidates include TanStack Query for server-state management and TanStack Router or another routing solution, depending on the chosen frontend structure.
+
+The frontend should provide responsive dashboards and role-specific navigation.
+
+16.3 Backend
+
+- Python.
+- FastAPI.
+- SQLAlchemy.
+
+The backend should contain the authoritative business logic for scoring, power calculations, lineup validation, permissions, and deadline enforcement.
+
+The frontend may provide immediate feedback, but the backend must independently validate all important operations.
+
+16.4 Database
+
+- SQLite.
+
+SQLAlchemy will be used for database access and persistence. SQLite is the initial database choice.
+
+The application should keep its data-access layer and domain logic sufficiently organized to make future database migration possible if the league's scale or deployment requirements eventually outgrow SQLite.
+
+16.5 General engineering principles
+
+- Keep the application modular.
+- Separate business rules from HTTP route handlers.
+- Avoid duplicating scoring and validation logic between frontend and backend.
+- Make the backend authoritative for all league rules.
+- Use database transactions for operations that update multiple related records.
+- Preserve historical match and power calculation data.
+- Make calculations deterministic and testable.
+- Add automated tests for scoring, PPG, court eligibility, lineup validation, permissions, and deadline enforcement.
+- Avoid hard-coding dates, deadlines, division match days, or other league-specific settings.
+
+======================================================================
+17. SUGGESTED DATA MODEL
+======================================================================
+
+The following is a conceptual starting point, not a finalized database schema.
+
+17.1 User
+- id
+- email
+- password_hash
+- account status
+- created_at
+- updated_at
+
+17.2 Player
+- id
+- user_id
+- first_name
+- last_name
+- team_id
+- profile_picture, if supported
+- total_power
+- games_played
+- current_ppg
+- account status
+
+The player record represents a tennis participant. The user record represents authentication credentials and account identity.
+
+17.3 Team
+- id
+- name
+- division_id
+- club_id
+- season_id or season participation relationship
+- status
+
+17.4 Team membership
+A membership or roster-history structure may be useful to preserve historical team membership and enforce roster deadlines.
+
+Potential fields:
+- id
+- team_id
+- player_id
+- start_date
+- end_date
+- membership status
+
+The exact approach should account for players being unable to transfer between teams and rosters being frozen after the deadline.
+
+17.5 Captain assignment
+- id
+- team_id
+- player_id or user_id
+- role
+- start_date
+- end_date
+
+The data model must support two equal captains per team.
+
+17.6 Division
+- id
+- name
+- description, if needed
+- match_day
+- status
+
+17.7 Season
+- id
+- name
+- start_date
+- end_date
+- roster_deadline
+- assigned_court_deadline
+- status
+
+17.8 Club
+- id
+- name
+- address or location, if needed
+
+17.9 Match
+- id
+- season_id
+- division_id
+- week_number
+- home_team_id
+- away_team_id
+- scheduled_date
+- actual_date
+- status
+- rescheduling reason and history
+
+17.10 Court match
+- id
+- match_id
+- court_number
+- home_team result
+- away_team result
+- calculated points
+- penalty/adjustment information
+
+17.11 Set result
+- id
+- court_match_id
+- set_number
+- home_games
+- away_games
+- completion status
+- time-limit status
+- calculated points for each team
+
+17.12 Lineup
+- id
+- match_id
+- team_id
+- status
+- created_at
+- locked_at
+- exchanged_at
+- confirming captain information
+
+17.13 Lineup player
+- id
+- lineup_id
+- player_id
+- actual_court
+- assigned_court_at_exchange
+- ppg_at_exchange
+- combined_court_ppg, where appropriate
+
+17.14 Player power history
+- id
+- player_id
+- match_id
+- court_number
+- match result
+- power earned
+- qualifying status
+- calculation timestamp
+
+A history table is recommended rather than relying only on a mutable total_power field.
+
+17.15 Point adjustment
+- id
+- match_id
+- court_match_id, if applicable
+- team_id
+- adjustment amount
+- reason
+- administrator_id
+- created_at
+
+17.16 Audit log
+- id
+- actor_user_id
+- action
+- entity type
+- entity id
+- before values, where appropriate
+- after values, where appropriate
+- timestamp
+
+The final schema should be normalized appropriately and should include foreign keys, indexes, uniqueness constraints, and suitable delete/update behavior.
+
+======================================================================
+18. CORE BUSINESS LOGIC AND VALIDATION SERVICES
+======================================================================
+
+The following logic should be implemented as backend domain services rather than being scattered across API routes.
+
+18.1 Lineup validation service
+
+Input:
+- Team.
+- Match.
+- Eight selected players.
+- Actual court assignment for each player.
+- Player assigned courts.
+- Player PPG values.
+
+Validation:
+- Exactly eight distinct players.
+- Two players per court.
+- All players belong to the team.
+- No duplicate player assignments.
+- Each player is eligible for the selected court.
+- Combined PPG strictly increases from Court 1 through Court 4.
+
+Output:
+- Valid or invalid status.
+- Court-level validation results.
+- Specific reasons for each violation.
+
+18.2 Player power service
+
+Input:
+- Player.
+- Court number.
+- Match result.
+
+Calculation:
+- Win = 1 × court number.
+- Tie = 1.25 × court number.
+- Loss = 1.5 × court number.
+
+Update:
+- Add qualifying power to the player's total.
+- Increase games played.
+- Recalculate PPG.
+
+The service must be idempotent or otherwise protected against duplicate processing.
+
+18.3 Team scoring service
+
+Input:
+- Individual set scores.
+- Set completion/time-limit status.
+- Court match.
+- Any applicable penalties or adjustments.
+
+Calculation:
+- Completed set: 2 points to winner, 0 to loser.
+- Timed set with 2+ game differential: 1 point to leading team.
+- Timed set with tied score or 1-game differential: 0.5 points to each team.
+- Maximum 6 points per court per team.
+- Maximum 24 points per team per week before other administrative adjustments.
+
+18.4 Deadline service
+
+The backend must enforce:
+- Roster registration deadline.
+- Assigned-court deadline.
+- Lineup locking after exchange.
+
+Deadline checks must use a consistent timezone policy. The league's official timezone has not yet been specified.
+
+18.5 Authorization service
+
+The backend must determine access based on:
+- User role.
+- Player identity.
+- Team membership.
+- Captain assignment.
+- Administrator status.
+- Resource visibility and lineup state.
+
+======================================================================
+19. USER INTERFACE AND EXPERIENCE
+======================================================================
+
+The interface should prioritize clarity and efficient workflows for captains.
+
+19.1 General interface
+
+- Responsive design.
+- Clear navigation.
+- Role-specific dashboards.
+- Consistent forms and tables.
+- Useful empty states.
+- Clear validation messages.
+- Confirmation for irreversible or important actions.
+- Appropriate loading and error states.
+
+19.2 Captain experience
+
+The lineup planner should be a central feature.
+
+A useful layout would show four court panels at once, each containing two player slots.
+
+Each player selection should expose:
+- Player name.
+- PPG.
+- Assigned court.
+- Eligibility for the selected court.
+
+Each court panel should show:
+- Two selected players.
+- Combined PPG.
+- Validation status.
+
+The four court panels should make it easy to see whether the combined PPG values increase strictly from Court 1 through Court 4.
+
+19.3 Player experience
+
+Players should be able to quickly find:
+- Their next match.
+- Their team's schedule.
+- Their personal statistics.
+- Their current PPG and power history.
+- Their team's match results and standings.
+
+19.4 Administrator experience
+
+Administrators need efficient tools for managing large sets of league data, reviewing exceptions, correcting records, and monitoring the season.
+
+======================================================================
+20. TESTING REQUIREMENTS
+======================================================================
+
+Automated tests should cover at least the following.
+
+20.1 Power calculation tests
+
+- Win on each court.
+- Tie on each court.
+- Loss on each court.
+- Correct PPG after multiple games.
+- No PPG change when a player does not participate.
+- No power change for a player affected by a lineup violation.
+- Duplicate match processing does not award power twice.
+
+20.2 Lineup validation tests
+
+- Valid eight-player lineup.
+- Fewer or more than eight players.
+- Duplicate player.
+- Incorrect number of players on a court.
+- Player from another team.
+- Player assigned Court 1 attempting Court 3.
+- Player assigned Court 2 attempting Court 4.
+- Equal combined PPG on adjacent courts.
+- Combined PPG in the wrong order.
+- Valid adjacent-court assignments.
+- Lineup modification after locking.
+
+20.3 Scoring tests
+
+- Completed set won.
+- Completed set lost.
+- Timed set with a 2-game differential.
+- Timed tied set.
+- Timed set with a 1-game differential.
+- Three completed sets.
+- Maximum six points on a court.
+- Maximum 24 points across four courts.
+- Standard lineup violation penalty.
+- Administrative point adjustment.
+
+20.4 Permission tests
+
+- Player accessing own team.
+- Player attempting to access another team.
+- Captain accessing own team management tools.
+- Captain accessing permitted opponent information.
+- Captain attempting to access opponent drafts.
+- Administrator accessing all teams.
+- Unauthorized user attempting administrative operations.
+
+20.5 Deadline tests
+
+- Roster change before deadline.
+- Roster change after deadline.
+- Assigned-court change before deadline.
+- Assigned-court change after deadline.
+- Timezone and boundary behavior.
+- Lineup draft editing before exchange.
+- Lineup modification after exchange.
+
+======================================================================
+21. UNRESOLVED QUESTIONS AND IMPLEMENTATION DECISIONS
+======================================================================
+
+The following details have not yet been confirmed. They should be tracked rather than silently assumed.
+
+21.1 Match outcome and player power
+
+- If a team wins one set and leads an unfinished second set by two or more games when time expires, is the match a win, tie, or something else for player power?
+- How should a timed set's one-point or half-point scoring outcome affect the match's win/tie/loss classification?
+- If one team's lineup is invalid on a court, does the opposing team's players still receive normal power?
+- Does the player power system count one completed court match as one game played, regardless of how many sets were played? This is the current interpretation of PPG but should be explicitly confirmed.
+
+21.2 Opponent information
+
+- Can opposing captains see players' assigned courts?
+- Which player profile fields are visible to opposing captains?
+
+21.3 Match score entry
+
+- Should the opposing captain confirm or acknowledge the host captain's entered score?
+- Can a captain edit a score after submission, or must an administrator approve corrections?
+
+21.4 Lineup exchange
+
+- Is digital simultaneous reveal required for the first release, or can it be introduced after the physical-exchange workflow is supported?
+- What should happen if one captain is ready but the other captain never locks their lineup?
+- Should administrators be able to unlock or correct an exchanged lineup?
+
+21.5 Standings
+
+- What are the standings tie-breaker rules?
+- Are standings determined solely by accumulated team points, or are other criteria involved?
+
+21.6 Administrative corrections
+
+- Should administrators be able to directly edit total power or PPG?
+- Should power corrections always be represented as auditable adjustments or recalculations from match history?
+
+21.7 Scheduling
+
+- What is the official league timezone?
+- What is the exact season date range?
+- Are match start times the same for all teams within a division?
+- How are schedule conflicts handled?
+
+21.8 Deadlines and exceptions
+
+- What are the actual roster and assigned-court deadline dates?
+- Can administrators authorize roster changes after the roster deadline?
+- Can administrators change assigned courts after the assigned-court deadline?
+
+21.9 Player account management
+
+- How are initial player accounts activated?
+- Can a player change their email address?
+- What is the process for password recovery?
+
+21.10 Technology decisions
+
+- Which TanStack packages will be used?
+- What authentication/session approach will be used?
+- Where will the application be hosted?
+- How will database backups be performed?
+- Is SQLite intended only for the initial deployment, or is it the long-term production database?
+
+======================================================================
+22. SUGGESTED IMPLEMENTATION PHASES
+======================================================================
+
+The application should be built incrementally. The first goal is a reliable foundation for the league's core operations.
+
+PHASE 1 — Foundation and access control
+
+- Project structure.
+- React frontend.
+- FastAPI backend.
+- SQLAlchemy and SQLite integration.
+- Authentication.
+- Player, captain, and administrator roles.
+- Team-level authorization.
+- Initial database models.
+
+PHASE 2 — League setup and roster management
+
+- Seasons.
+- Divisions.
+- Teams.
+- Clubs.
+- Player accounts.
+- Captain assignments.
+- Rosters.
+- Roster deadline.
+- Assigned courts.
+- Assigned-court deadline.
+
+PHASE 3 — Schedules and matchups
+
+- 18-week schedules.
+- Double round-robin matchups.
+- Home and away assignments.
+- Division-specific match days.
+- Rescheduling workflow.
+
+PHASE 4 — Lineup planning and validation
+
+- Private lineup drafts.
+- Player selection.
+- Court assignment.
+- Assigned-court eligibility.
+- Combined PPG calculation.
+- Strict court-order validation.
+- Draft saving.
+- Lineup locking.
+- Exchange workflow.
+
+PHASE 5 — Match scoring and player power
+
+- Match records.
+- Court matches.
+- Set score entry.
+- Timed-set scoring.
+- Team point calculations.
+- Lineup penalties.
+- Player power calculations.
+- PPG updates.
+- Historical power records.
+- Administrative adjustments.
+
+PHASE 6 — Dashboards and statistics
+
+- Team dashboards.
+- Player profiles.
+- Player statistics.
+- Opponent read-only views.
+- Division standings.
+- Match history.
+- Team statistics.
+
+PHASE 7 — Administrative tools and refinements
+
+- Full administrator dashboard.
+- Audit logs.
+- Reporting and exports.
+- Notifications.
+- Administrative corrections.
+- Additional quality-of-life features.
+
+The order can be adjusted as implementation reveals dependencies. Core business rules should be tested before relying on them for real league records.
+
+======================================================================
+23. PRODUCT DESIGN PRINCIPLES
+======================================================================
+
+The following principles should guide future development:
+
+1. Accuracy over convenience.
+   Scoring, power, and lineup validation must be mathematically correct and consistent.
+
+2. Backend authority.
+   Important league rules must be enforced by the backend, even if the frontend also provides immediate validation.
+
+3. Privacy by default.
+   Teams should only access their own private information. Opponent visibility should be deliberately limited.
+
+4. Historical integrity.
+   Match results, lineup exchanges, player power calculations, and administrative adjustments should be traceable.
+
+5. Configurability.
+   Deadlines and appropriate league settings should be configurable rather than embedded as fixed assumptions.
+
+6. Clear captain workflows.
+   The lineup planning experience should minimize errors and make rule violations understandable.
+
+7. Modular implementation.
+   Keep league domains separated within the modular monolith so features can evolve without creating unnecessary coupling.
+
+8. Incremental development.
+   Build the essential functionality first. Add analytics and convenience features after the core workflows are reliable.
+
+======================================================================
+24. SUMMARY
+======================================================================
+
+The product is a modular-monolithic web application for managing a Women's Winter Indoor Doubles Tennis League.
+
+The league has multiple independent skill-based divisions. Each division has approximately 10 teams, an 18-week double round-robin season, its own match day, and independent standings and statistics.
+
+Each team has two equal captains and a roster of players. Every player has an individual account and can belong to only one team. Rosters are frozen after a configurable league-wide deadline. Player assigned courts are controlled by captains until a separate configurable deadline.
+
+The application's defining feature is its four-court lineup planner. Each weekly lineup has eight distinct players, two per court. Players may play on their assigned court or an adjacent court. The combined PPG of the two players on each court must strictly increase from Court 1 through Court 4. The application should validate these rules automatically and explain violations.
+
+Teams exchange lineups simultaneously. The application can support an optional digital reveal process that keeps drafts private until both captains are ready. Once exchanged, lineups are locked.
+
+Each court plays up to three sets within two hours. Completed sets award two points to the winner. Timed sets use the league's one-point or half-point rules. A team can earn up to six points per court and 24 points per week.
+
+Player power is calculated separately from team points. Win, tie, and loss results produce different power amounts based on the court played. A player's PPG is their total power divided by their own games played. Lower PPG indicates a stronger player.
+
+Administrators have league-wide access and can apply point adjustments and penalties, while the normal lineup-violation penalty is forfeiture of the violating court's points. Player power must not be updated for players affected by an invalid lineup.
+
+The initial technology stack is React JS, Tailwind CSS, TanStack, FastAPI, SQLAlchemy, and SQLite. The architecture is a modular monolith, with business logic and rule enforcement centralized in the backend.
+
+This document is an initial product specification. Confirmed rules are separated from unresolved questions so development can begin without pretending that every league policy has already been decided.
