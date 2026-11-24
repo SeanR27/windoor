@@ -15,7 +15,7 @@ If code and docs disagree, stop and say so. Don't silently pick one.
 
 - **Backend is authoritative.** Never put a league rule (eligibility, PPG ordering, scoring, Power, deadlines, permissions) in the frontend. The planner renders backend validation results (ADR-005).
 - **Don't invent league policy.** If a behavior depends on an open question (`OQ-n`), implement the documented interim behavior and reference the OQ ID in a comment. If no interim behavior is documented, ask.
-- **Exact arithmetic.** Power is stored in integer quarter-points, Team Points in integer half-points, and Starting PPG in integer thousandths. PPG is a `fractions.Fraction`. Never use `float` for these, and never compare PPGs with an epsilon (ADR-004).
+- **Exact arithmetic.** Power is stored in integer quarter-points and Team Points in integer half-points. PPG is a `fractions.Fraction`. Never use `float` for these, and never compare PPGs with an epsilon (ADR-004).
 - **Append-only tables stay append-only:** `PowerLedgerEntry`, `ScoreRevision`, `SetScore`, `ScoreSubmission`, `PointAdjustment`, `RescheduleEvent`, `AuditEvent`. Corrections are new rows (reversals or revisions).
 - **Authorize in services**, through `app/authz` policies, on every operation. Write a test that the operation fails for a user from another Team who supplies a valid ID.
 - **Audit inside the transaction.** Every audited change (REQUIREMENTS AUD-01) writes its `AuditEvent` in the same transaction. Admin bypasses and corrections require a `reason`.

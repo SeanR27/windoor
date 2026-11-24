@@ -9,7 +9,6 @@ This document describes what data exists and how it relates. It is a logical mod
 - **Exact numbers** (see ADR-004):
   - Power is stored as integer **quarter-points** (`power_q`; 1.25 power = 5).
   - Team Points are stored as integer **half-points** (`points_h`; 0.5 points = 1).
-  - Starting PPG is stored as integer **thousandths** (`starting_ppg_m`; 2.375 = 2375).
   - PPG is never stored as a float. It is computed as an exact fraction.
 - **Append-only** tables (marked ⛔) are never updated or deleted. Corrections are new rows.
 - Every table has `created_at`. Mutable tables also have `updated_at`.
@@ -85,7 +84,6 @@ Activation and password-reset links.
 | start_date, end_date | |
 | roster_deadline_at | UTC instant |
 | assigned_court_deadline_at | UTC instant |
-| starting_ppg_rule | `until_first_appearance` (only value in v1) |
 | status | `draft` \| `active` \| `archived` |
 
 ### MatchWeek
@@ -122,7 +120,6 @@ One Player on one Team for one Season.
 | season_id, team_id, user_id | |
 | assigned_court | 1–4 |
 | is_captain | bool; ≤ 2 per (season, team), exactly 2 once the Season is active |
-| starting_ppg_m | int thousandths; set by an Admin before activation |
 | removed_at | null while active |
 
 Constraint: unique (season_id, user_id) where removed_at is null.
@@ -282,9 +279,7 @@ Constraints:
 Derived per (season, user):
 - `total_power = Σ power_q / 4`
 - `appearances = Σ appearances_delta`
-- `PPG = total_power / appearances` if appearances > 0, else `starting_ppg_m / 1000`
-
-**Previous Season's final PPG** (for pre-filling Starting PPG) is the derived PPG over the prior Season's ledger.
+- `PPG = total_power / appearances` if appearances > 0, else the Starting PPG: the `assigned_court` of the Player's active SeasonRosterEntry (PWR-03)
 
 **Power finality for a Team in a TeamMatch** (used by LIN-07): a current revision exists, none of its CourtResults are `needs_classification`, and the Team's Lineup exists in state `locked` or `exchanged` (or was entered by an Admin).
 

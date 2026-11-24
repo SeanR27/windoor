@@ -30,7 +30,6 @@ None of these may be hard-coded.
 | CFG-04 | **Assigned-Court Deadline**, separate from the Roster Deadline | Season (applies league-wide) | v1 |
 | CFG-05 | Division match day and default start time | Division | v1 |
 | CFG-06 | Whether opposing Captains can see Assigned Courts (default: **no**) | League | v1 |
-| CFG-07 | **Starting PPG** rule (v1 rule: used until the Player's first Appearance) | Season | v1 |
 
 All timestamps are stored in UTC. Deadlines are evaluated, and dates displayed, in the league timezone (CFG-01). A deadline is a precise instant, and an action exactly at the deadline instant is rejected.
 
@@ -77,7 +76,7 @@ All timestamps are stored in UTC. Deadlines are evaluated, and dates displayed, 
 | Seasons, Divisions, Clubs, Teams, Captains, schedules, settings | | | ✓ |
 | Unlock or edit a locked/exchanged Lineup; correct scores; resolve **Score Discrepancies** | | | ✓ (with reason) |
 | Classify Court Results; record **Lineup Violations**; apply point adjustments | | | ✓ (with reason) |
-| Set Starting PPGs; apply Power adjustments | | | ✓ (with reason) |
+| Apply Power adjustments | | | ✓ (with reason) |
 | View audit log | | | ✓ |
 
 Captains cannot invite an already-registered user onto their Team, transfer a Player from another Team, modify a locked Lineup, view another Team's drafts or Availability, or use another Team's tools.
@@ -108,10 +107,10 @@ Captains cannot invite an already-registered user onto their Team, transfer a Pl
 
 | ID | Requirement | Priority |
 |---|---|---|
-| PWR-01 | Each **Appearance** earns Power based on the Playing Court number *c* and the **Court Result**: win = 1·*c*, tie = 1.25·*c*, loss = 1.5·*c*. | v1 |
+| PWR-01 | Each **Appearance** earns Power based on the Playing Court number *c* and the **Court Result**: win = *c*, tie = *c* + 0.25, loss = *c* + 0.5. For example, a tie on Court 3 earns 3.25. | v1 |
 | PWR-02 | PPG = total Power ÷ Appearances, per Player, **within the current Season**. Power and PPG reset at each Season start. Lower PPG means a stronger Player. | v1 |
-| PWR-03 | Before the Season starts, an Administrator sets a **Starting PPG** for every roster entry. The admin screen pre-fills a returning Player's Starting PPG with their previous Season's final PPG. The admin may override it. | v1 |
-| PWR-04 | A Player with zero Appearances in the Season has PPG = Starting PPG. From their first Appearance onwards, PPG is their real PPG, and the Starting PPG no longer counts. | v1 |
+| PWR-03 | A Player's **Starting PPG** is their current **Assigned Court** number (1–4). It is derived, never entered: nobody sets or overrides it, and nothing carries over from a previous Season. If the Assigned Court changes before the Player's first Appearance, the Starting PPG follows it. | v1 |
+| PWR-04 | A Player with zero Appearances in the Season has PPG = Starting PPG. From their first Appearance onwards, PPG is their real PPG, and the Starting PPG no longer counts. For example, a Player with Assigned Court 2 (PPG 2) who wins on Court 3 has PPG 3 ÷ 1 = 3. | v1 |
 | PWR-05 | Total Power, Appearances, and PPG are always derived from the **Power Ledger**. They are never edited directly. Administrator corrections are ledger entries with a reason. | v1 |
 | PWR-06 | A Player who doesn't play a Team Match gets no ledger entry for it. | v1 |
 | PWR-07 | Players denied Power by a Lineup Violation (§8) get no award. Their PPG is unchanged. | v1 |
@@ -269,7 +268,7 @@ Standings and statistics are derived from these records.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| AUD-01 | Audited actions: roster changes, account creation and edits, Assigned-Court changes, Starting PPG changes, Lineup creation, lock, exchange, and admin edits, Availability changes, Score Submissions, confirmations, disputes, and resolutions, Court Result classifications, violations and adjustments, Power adjustments, schedule changes and Rescheduling, and settings changes. | v1 |
+| AUD-01 | Audited actions: roster changes, account creation and edits, Assigned-Court changes, Lineup creation, lock, exchange, and admin edits, Availability changes, Score Submissions, confirmations, disputes, and resolutions, Court Result classifications, violations and adjustments, Power adjustments, schedule changes and Rescheduling, and settings changes. | v1 |
 | AUD-02 | Each audit event records the actor, action, affected record, timestamp, before/after values where practical, and the reason (required for every administrator bypass or correction). | v1 |
 | AUD-03 | Audit events are append-only and visible to Administrators. | v1 |
 
@@ -297,7 +296,7 @@ The backend (and, where practical, database constraints) must guarantee:
 
 Automated tests must cover at least the following.
 
-- **Power:** win, tie, and loss on each Court; PPG after multiple Appearances; Starting PPG before the first Appearance and its disappearance after; no change without an Appearance; no award for violation-denied Players; no double award on re-processing or correction; exact arithmetic (no float drift).
+- **Power:** win, tie, and loss on each Court; PPG after multiple Appearances; Starting PPG equals the Assigned Court before the first Appearance, follows an Assigned-Court change, and disappears after the first Appearance (e.g. Assigned 2, win on Court 3 → PPG 3); no change without an Appearance; no award for violation-denied Players; no double award on re-processing or correction; exact arithmetic (no float drift).
 - **Lineup validation:** a valid lineup; 7 and 9 Players; a duplicate Player; a wrong count on a Court; a Player from another Team; Assigned 1 on Court 3; Assigned 2 on Court 4; valid adjacent placements; equal adjacent Combined PPG; wrong ordering; `validity_unknown` when the Preceding Team Match isn't final; Preceding Team Match after Rescheduling; first Team Match uses Starting PPG; lock blocked unless valid; modification after lock.
 - **Scoring:** completed Set won and lost; timed Set with a 2-Game lead, a tie, and a 1-Game difference; three completed Sets; the 6-per-Court and 24-per-Team-Match maximums; violation forfeit; admin adjustment; auto-classification versus Needs Classification.
 - **Score Submission:** first submission wins (either Team); confirm; dispute keeps the official score; admin correction recalculates; no edit after submission; missing Lineup doesn't block.
@@ -321,4 +320,4 @@ League policies not yet decided. Each one has an interim behavior that the app i
 | OQ-9 | Where will the application be hosted? | Undecided; architecture assumes a single small host. |
 | OQ-10 | How are database backups performed and retained? | Undecided; must be settled before go-live (Roadmap Phase 4 exit). |
 | OQ-11 | Will the league allow roster changes or Assigned-Court changes after the deadlines in practice? | The software lets Administrators do it with a reason (ROS-03, ROS-05). |
-| OQ-12 | Is there a league guideline for a brand-new Player's Starting PPG? | An Administrator chooses the value (PWR-03). |
+| OQ-12 | Is there a league guideline for a brand-new Player's Starting PPG? | **Resolved (2026-11-23):** Starting PPG is the Assigned Court number for every Player (PWR-03, ADR-011). |

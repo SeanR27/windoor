@@ -111,13 +111,13 @@ One Player playing one Court Match. This is what "Games Played" counts in PPG.
 _Avoid_: game, game played (as a standalone term)
 
 **Power**
-Points a Player accrues per Appearance: 1×, 1.25×, or 1.5× the Playing Court number for a win, tie, or loss. Lower totals mean stronger results.
+Points a Player accrues per Appearance: the Playing Court number for a win, plus 0.25 for a tie, or plus 0.5 for a loss. Lower totals mean stronger results.
 
 **PPG (Power Per Game)**
 A Player's total Power divided by their Appearances within the current Season. Lower PPG means a stronger Player. The name is kept because the league uses it, even though the denominator is Appearances.
 
 **Starting PPG**
-A PPG value an Administrator sets for each Player at the start of a Season. It serves as the Player's PPG until their first Appearance of that Season, after which their real PPG applies.
+A Player's PPG before their first Appearance of a Season: their Assigned Court number. From their first Appearance onwards, their real PPG applies and the Starting PPG no longer counts.
 
 **Power Ledger**
 The permanent, append-only record of every Power award and adjustment for a Player in a Season. A Player's total Power, Appearances, and PPG are always derived from it.

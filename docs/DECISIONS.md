@@ -61,7 +61,7 @@ Each entry has a status, context, the decision, the alternatives considered, and
 
 ## ADR-004: Exact integer arithmetic for Power, Points and PPG
 
-**Status:** Accepted (2026-11-23)
+**Status:** Accepted (2026-11-23); Starting PPG storage superseded by ADR-011
 
 **Context:** The court-ordering rule is a *strict* inequality on sums of averages, and equal values are invalid. With floating-point, two equal Combined PPGs can compare as unequal, or the reverse.
 
@@ -170,7 +170,7 @@ Each entry has a status, context, the decision, the alternatives considered, and
 
 ## ADR-010: Rosters and PPG are scoped per Season
 
-**Status:** Accepted (2026-11-23)
+**Status:** Accepted (2026-11-23); Starting PPG parts superseded by ADR-011
 
 **Context:** Teams persist across seasons, but players may change teams between seasons, and the league resets PPG each season.
 
@@ -184,3 +184,21 @@ Each entry has a status, context, the decision, the alternatives considered, and
 - Career-long PPG: rejected by the league.
 
 **Consequences:** Every query about "the team's players" needs a Season. Season activation must check that every roster entry has a Starting PPG and that each Team has exactly two Captains.
+
+---
+
+## ADR-011: Starting PPG is the Assigned Court
+
+**Status:** Accepted (2026-11-23). Supersedes the Starting PPG parts of ADR-010 (admin-set, pre-filled from last Season, checked at activation) and of ADR-004 (stored in thousandths).
+
+**Context:** The league defined Starting PPG as the Player's Assigned Court number, and replaced the multiplier Power formula with win = *c*, tie = *c* + 0.25, loss = *c* + 0.5.
+
+**Decision:**
+- Starting PPG is derived from the Player's current Assigned Court. It is not stored, entered, or overridden.
+- Nothing carries over from a previous Season.
+- It applies only while the Player has zero Appearances in the Season (PWR-04).
+
+**Alternatives:**
+- Admin-set Starting PPG pre-filled from last Season's final PPG (ADR-010): more flexible, but it needs manual entry, an audit trail, and an activation check, and the league rejected it.
+
+**Consequences:** `SeasonRosterEntry.starting_ppg_m` and `Season.starting_ppg_rule` are dropped, along with the Starting PPG admin screen, permission, audit item, and activation check. An Assigned-Court change before a Player's first Appearance changes their PPG. Locked Lineups are unaffected because they snapshot PPG (LIN-19).

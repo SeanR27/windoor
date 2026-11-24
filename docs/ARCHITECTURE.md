@@ -32,7 +32,7 @@ backend/
 │   └── modules/
 │       ├── identity/        # users, sessions, activation/reset tokens
 │       ├── league/          # league settings, seasons, match weeks, divisions, clubs
-│       ├── teams/           # teams, captains, season roster entries, assigned courts, starting PPG
+│       ├── teams/           # teams, captains, season roster entries, assigned courts
 │       ├── schedule/        # team matches, schedule generation/validation, rescheduling
 │       ├── lineups/         # availability, drafts, validation, lock/exchange, preceding-match logic
 │       ├── results/         # score submissions, revisions, discrepancies, court results, violations, adjustments, team points
@@ -72,8 +72,8 @@ These hold the league's rules. They are deterministic, test-first (see AGENTS.md
 | `set_points(set_score)` (results) | → (home_h, away_h) |
 | `court_points(sets)` (results) | → (home_h, away_h), max 12 half-points each |
 | `classify_court(sets)` (results) | → win / tie / loss / needs_classification |
-| `power_for(court, outcome)` (power) | → quarter-points (win 4c, tie 5c, loss 6c) |
-| `ppg(entries, starting_ppg)` (power) | → exact `Fraction` |
+| `power_for(court, outcome)` (power) | → quarter-points (win 4c, tie 4c+1, loss 4c+2) |
+| `ppg(entries, assigned_court)` (power) | → exact `Fraction` |
 | `check_deadline(now, deadline, actor_is_admin)` (league) | → allowed / denied(reason) |
 | `validate_schedule(teams, matches)` (schedule) | → violations |
 | `generate_double_round_robin(teams, weeks)` (schedule) | → proposed matches |
@@ -106,7 +106,7 @@ To avoid import cycles, `power` and `audit` depend on nothing domain-specific. `
 
 ### 2.7 Exact arithmetic (ADR-004)
 
-Power is stored in integer quarter-points, Team Points in integer half-points, and Starting PPG in integer thousandths. PPG and Combined PPG are `fractions.Fraction`, so the strict ordering comparison is exact. Values are serialized to the frontend as decimal strings rounded for display, plus exact numerator/denominator where the UI needs comparisons. In practice the UI never compares: the backend does.
+Power is stored in integer quarter-points and Team Points in integer half-points. PPG and Combined PPG are `fractions.Fraction`, so the strict ordering comparison is exact. Values are serialized to the frontend as decimal strings rounded for display, plus exact numerator/denominator where the UI needs comparisons. In practice the UI never compares: the backend does.
 
 ### 2.8 Persistence
 

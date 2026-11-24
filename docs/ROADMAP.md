@@ -25,7 +25,7 @@ Within a phase, build one vertical slice end-to-end (domain → service → API 
 - Divisions (match day, default start time), Clubs, and Teams (LGE-01–05, CFG-05).
 - Admin creation of Player accounts.
 - Schedule: double round-robin generation, editing, validation, and Rescheduling with history (SCH-01–06).
-- Season activation checks (two Captains per Team, Starting PPGs set, a valid schedule, timezone set).
+- Season activation checks (two Captains per Team, a valid schedule, timezone set).
 
 **Exit:** an Administrator can set up a Season with Divisions, Teams, and a validated 18-week schedule, and can reschedule a Team Match.
 
@@ -34,7 +34,6 @@ Within a phase, build one vertical slice end-to-end (domain → service → API 
 - Season Roster Entries. Captain roster management before the deadline, and admin bypass with a reason afterwards (ROS-01–03).
 - Assigned Courts and their deadline (ROS-04–06).
 - Captain designation (ROS-07).
-- Starting PPG entry with pre-fill from the previous Season (PWR-03).
 - Roster print and download (ROS-08).
 - Basic team dashboard: overview, schedule, and roster (DSH-01 basic).
 
