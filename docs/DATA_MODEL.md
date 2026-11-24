@@ -180,6 +180,8 @@ On Rescheduling, all rows for the TeamMatch are deleted (the deletion is audited
 | user_id | → User |
 | assigned_court_snapshot | set on lock |
 | ppg_snapshot | exact fraction stored as numerator/denominator integers; set on lock |
+| previous_playing_court_snapshot | 1–4 or null (no earlier Appearance); set on lock (LIN-25) |
+| movement_exception_reason | text or null; non-null means the slot has a Movement Exception (LIN-27) |
 
 Constraints: unique (lineup_id, court, position) and unique (lineup_id, user_id). Drafts may have empty positions (no row).
 
@@ -281,7 +283,7 @@ Derived per (season, user):
 - `appearances = Σ appearances_delta`
 - `PPG = total_power / appearances` if appearances > 0, else the Starting PPG: the `assigned_court` of the Player's active SeasonRosterEntry (PWR-03)
 
-**Power finality for a Team in a TeamMatch** (used by LIN-07): a current revision exists, none of its CourtResults are `needs_classification`, and the Team's Lineup exists in state `locked` or `exchanged` (or was entered by an Admin).
+**Power finality for a Team in a TeamMatch** (used by LIN-07, checked for every earlier TeamMatch of the Team in the Season): a current revision exists, none of its CourtResults are `needs_classification`, and the Team's Lineup exists in state `locked` or `exchanged` (or was entered by an Admin).
 
 ## Audit
 

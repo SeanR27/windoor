@@ -39,10 +39,11 @@ A league official with full access to all league data and management. All Admini
 
 **Court**
 One of the four ranked playing positions in a Team Match, numbered 1 (strongest) to 4 (weakest).
+_Avoid_: line
 
 **Assigned Court**
-The Court a Captain designates for a Player for the Season. It determines which Courts that Player is eligible for (the Assigned Court and the adjacent ones). It is fixed after the Assigned-Court Deadline.
-_Avoid_: home court, default court
+The Court a Captain designates for a Player for the Season. It determines which Courts that Player is eligible for (the Assigned Court and the adjacent ones), unless they have a Movement Exception. It is fixed after the Assigned-Court Deadline.
+_Avoid_: home court, default court, regular court
 
 **Playing Court**
 The Court a Player actually plays on in a given Lineup.
@@ -57,10 +58,13 @@ A Lineup that hasn't been locked yet. It is private to the Team's Captains and A
 For a given Team Match, the same Team's Team Match scheduled most recently before it, by current date and after any Rescheduling. The first Team Match of a Season has none.
 
 **Validity Unknown**
-A Lineup's status when its Team's Preceding Team Match doesn't yet have final Power for that Team's Players, so up-to-date PPG isn't available. A Lineup with this status can't be locked.
+A Lineup's status when one of its Team's earlier Team Matches in the Season, usually the Preceding Team Match, doesn't yet have final Power for that Team's Players, so up-to-date PPG isn't available. A Lineup with this status can't be locked.
 
 **Combined PPG**
 The sum of the PPGs of the two Players on one Court in a Lineup. It must strictly increase from Court 1 to Court 4.
+
+**Movement Exception**
+A Captain's declaration, with a reason, that a Player in a Lineup is the best fit among the available Players for a Court they couldn't otherwise play. It lets that Player play any Court, ignoring both their Assigned Court and the one-Court limit on movement since their last Appearance. Combined PPG ordering, and the rule that a winning pair stays above a losing pair, still apply.
 
 **Lineup Violation**
 An Administrator's finding that a Team's Lineup, as actually played on a specific Court, broke the lineup rules. It forfeits that Team's points on that Court and denies power to that Team's two Players on it.

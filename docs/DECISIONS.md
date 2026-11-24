@@ -94,7 +94,7 @@ Each entry has a status, context, the decision, the alternatives considered, and
 
 ## ADR-006: Lineup validity uses a PPG snapshot at lock, gated on the Preceding Team Match
 
-**Status:** Accepted (2026-11-23)
+**Status:** Accepted (2026-11-23); the gate is widened to all earlier Team Matches by ADR-013
 
 **Context:**
 - PPG changes as results arrive, and results can arrive late, be rescheduled out of order, or be corrected.
@@ -202,3 +202,31 @@ Each entry has a status, context, the decision, the alternatives considered, and
 - Admin-set Starting PPG pre-filled from last Season's final PPG (ADR-010): more flexible, but it needs manual entry, an audit trail, and an activation check, and the league rejected it.
 
 **Consequences:** `SeasonRosterEntry.starting_ppg_m` and `Season.starting_ppg_rule` are dropped, along with the Starting PPG admin screen, permission, audit item, and activation check. An Assigned-Court change before a Player's first Appearance changes their PPG. Locked Lineups are unaffected because they snapshot PPG (LIN-19).
+
+## ADR-012: Movement Exceptions are declared by the Captain, not verified by the app
+
+**Status:** Accepted (2026-11-23).
+
+**Context:** The league lets a Player move more than one Court, or outside their Assigned Court's range, "when there is no other available option" (LIN-27, LIN-28). Whether that condition holds depends on who actually turned up. Availability is only advisory and defaults to `no_response` (AVL-06), so the app can't know it.
+
+**Decision:** A Captain declares a Movement Exception per Player with a required reason. The backend accepts the declaration and lifts LIN-04 and LIN-25 for that Player, while still enforcing LIN-05 and LIN-26. The declaration is snapshotted on lock and audited. Abuse is handled afterwards: an Administrator can record a Lineup Violation (PEN-01).
+
+**Alternatives:**
+- The backend searches the `available` Players and allows the exception only when no Lineup that follows every rule exists. This was rejected: it depends on Availability being reliable, and it would block Lineups the league considers legal.
+- An Administrator approves each exception before lock. This was rejected: it adds a step on match day, when Administrators may not be reachable.
+
+**Consequences:** `LineupSlot.movement_exception_reason` marks an exception. Validity no longer proves that a Lineup followed the spirit of the movement rules, only that every exception was declared. Enforcement depends on Administrators reviewing exceptions.
+
+## ADR-013: Lineup validity is gated on every earlier Team Match, not only the Preceding one
+
+**Status:** Accepted (2026-11-23). Supersedes the gate in ADR-006.
+
+**Context:** A missing Lineup doesn't block scoring (SUB-02). The score is stored per Set per Court, but no Players are mapped to those Courts, so that Team's Power waits (CRS-03). ADR-006 checked only the Preceding Team Match. So a Lineup still missing from two weeks ago went unnoticed: that Team's PPGs were stale, and the movement limit (LIN-25) had no Court to measure from.
+
+**Decision:** A Lineup is `validity_unknown` while any of the Team's earlier Team Matches in the Season lacks final Power for that Team (LIN-07). Only the Team with the gap is blocked, and only from locking. Drafts, Availability, scoring, and the opponent's Power continue.
+
+**Alternatives:**
+- Block score submission until both Lineups exist: one Team's mistake would freeze the other Team's points and Power.
+- Keep checking only the Preceding Team Match: allows locking on stale PPG and an unknown previous Court.
+
+**Consequences:** If an Administrator doesn't enter a missing Lineup before the Team's next start time, that Team can't lock again, and the gap carries forward until an Administrator acts (LIN-21). The missing-Lineup work queue (DSH-03) must be watched every week.

@@ -99,7 +99,7 @@ Captains cannot invite an already-registered user onto their Team, transfer a Pl
 | ROS-03 | After the Roster Deadline, the Roster is frozen for Captains. Administrators may change it with a recorded reason (OQ-11). | v1 |
 | ROS-04 | Every entry has an **Assigned Court** from 1 to 4, chosen by the Captains. | v1 |
 | ROS-05 | After the Assigned-Court Deadline, Assigned Courts are frozen for Captains. Administrators may change them with a recorded reason. | v1 |
-| ROS-06 | Eligible **Playing Courts**: Assigned 1 → {1, 2}. Assigned 2 → {1, 2, 3}. Assigned 3 → {2, 3, 4}. Assigned 4 → {3, 4}. | v1 |
+| ROS-06 | Eligible **Playing Courts**: Assigned 1 → {1, 2}. Assigned 2 → {1, 2, 3}. Assigned 3 → {2, 3, 4}. Assigned 4 → {3, 4}. A Movement Exception lifts this (LIN-28). | v1 |
 | ROS-07 | Each Team has exactly two Captains per Season, chosen from its Roster by an Administrator. This is enforced when the Season is activated and from then on. While a Season is in draft, a Team may temporarily have fewer. | v1 |
 | ROS-08 | Captains can print or download their Team's Roster. | v1 |
 
@@ -141,20 +141,22 @@ A **Lineup** is **valid** when all of these hold:
 | LIN-01 | Exactly 8 distinct Players are selected. |
 | LIN-02 | Exactly 2 Players are on each of Courts 1–4. |
 | LIN-03 | Every Player has an active Season Roster Entry on the Team. |
-| LIN-04 | Every Player's Playing Court is eligible for their Assigned Court (ROS-06). |
+| LIN-04 | Every Player's Playing Court is eligible for their Assigned Court (ROS-06), unless the Player has a **Movement Exception** (LIN-28). |
 | LIN-05 | Combined PPG strictly increases: C1 < C2 < C3 < C4. Equal values on adjacent Courts are invalid. The comparison is within one Team's Lineup, never against the opponent. |
+| LIN-25 | **Movement limit:** a Player's Playing Court is at most one Court away from their Playing Court in their most recent Appearance of the Season before this Team Match, ordered by current scheduled dates (LIN-08). That Appearance may be older than the Preceding Team Match if the Player sat it out. The Court actually played counts, even if Power was denied for it (PWR-07). A Player with no earlier Appearance in the Season is limited only by LIN-04. Because of LIN-07, every earlier Appearance's Court is known before a Lineup can be `valid`. The limit is lifted by a Movement Exception (LIN-28) and on the return from one (LIN-29). Example: Assigned 2, played Court 1 last time, so Court 3 is invalid now. |
+| LIN-26 | **Winning pair stays above losing pair:** take two pairs from the Team's Preceding Team Match: one whose Court Result was a win, the other a loss, with the winning pair on a higher Court (lower number) than the losing pair. If both pairs play together again in this Lineup, the winning pair must still be on a higher Court than the losing pair. Once either pair is split, the rule no longer applies to it. Ties aren't covered. Both pairs may move as long as their order is kept. Example: last time, A1+A2 won on Court 2 and B1+B2 lost on Court 3. Now B1+B2 on Court 2 and A1+A2 on Court 3 is invalid, but A1+B1 on Court 2 and A2+B2 on Court 3 is allowed. This rule still applies under a Movement Exception. |
 
 ### 7.2 Validity state and the Preceding Team Match
 
 | ID | Requirement | Priority |
 |---|---|---|
 | LIN-06 | A Lineup's validity status is `valid`, `invalid`, or `validity_unknown`. | v1 |
-| LIN-07 | The status is `validity_unknown` while the Team's **Preceding Team Match** lacks final Power for this Team's Players. "Final" means all three of these: an official score exists, no Court of it is awaiting Court Result classification, and this Team's Lineup for it is present. | v1 |
+| LIN-07 | The status is `validity_unknown` while **any** of the Team's earlier Team Matches in the Season (by current scheduled dates, LIN-08) lacks final Power for this Team's Players. Usually this is the **Preceding Team Match**, but an older gap, such as a Lineup still missing from two weeks ago, also counts (ADR-013). Only the Team with the gap is blocked. "Final" means all three of these: an official score exists, no Court of it is awaiting Court Result classification, and this Team's Lineup for it is present. | v1 |
 | LIN-08 | The Preceding Team Match is determined by **current scheduled dates**, after any Rescheduling. Example: if week 5 is rescheduled to after week 6, then week 6's Preceding Team Match is week 4, and week 5's is week 6. | v1 |
 | LIN-09 | Only the Team's own Preceding Team Match matters. The opponent's results don't. | v1 |
 | LIN-10 | A Team's first Team Match of the Season has no Preceding Team Match. It is validated immediately against Starting PPGs. | v1 |
 | LIN-11 | A preceding score that is Unconfirmed or under a Score Discrepancy still counts as having results. | v1 |
-| LIN-12 | While `validity_unknown`, the planner still shows the per-Court eligibility checks (LIN-01–LIN-04) and the current Combined PPGs, marked **provisional**. It withholds the overall verdict and the ordering result (LIN-05), and explains why (e.g. "Validity unknown: no final results yet for the 12 Jan match vs. Riverside"). | v1 |
+| LIN-12 | While `validity_unknown`, the planner still shows the per-Court eligibility checks (LIN-01–LIN-04) and the current Combined PPGs, marked **provisional**. It withholds the overall verdict, the ordering result (LIN-05), and the movement and winning-pair results (LIN-25, LIN-26), and explains why (e.g. "Validity unknown: no final results yet for the 12 Jan match vs. Riverside"). | v1 |
 
 ### 7.3 Workflow and states
 
@@ -166,12 +168,21 @@ A **Lineup** is **valid** when all of these hold:
 | LIN-16 | Validation is performed by the backend. The planner requests validation as the Captain edits. The frontend contains no rule logic. | v1 |
 | LIN-17 | A Captain may lock a Lineup only when it is `valid`. Locking is impossible while `invalid` or `validity_unknown`. | v1 |
 | LIN-18 | Locking must happen before the Team Match's start time. There is no other lock deadline in v1. | v1 |
-| LIN-19 | On lock, the app snapshots each Player's Assigned Court and PPG, each Court's Combined PPG, the validation result, the timestamp, and the locking Captain. Validity is judged on this snapshot forever: later score corrections never re-open or invalidate a locked Lineup. | v1 |
+| LIN-19 | On lock, the app snapshots each Player's Assigned Court, PPG, previous Playing Court (LIN-25), and Movement Exception with its reason (LIN-27), and also each Court's Combined PPG, the validation result, the timestamp, and the locking Captain. Validity is judged on this snapshot forever: later score corrections never re-open or invalidate a locked Lineup. | v1 |
 | LIN-20 | v1 exchange is physical (on paper at the Club). A locked Lineup becomes `exchanged` automatically at the Team Match's start time. Captains can't modify a locked or exchanged Lineup. | v1 |
 | LIN-21 | Administrators may unlock or edit any Lineup, or enter a missing one, with a recorded reason. An admin-entered Lineup is stored with its validation result even if it was invalid as played. | v1 |
 | LIN-22 | Exchanged Lineups become visible to the opponent's Captains. Locked-but-not-exchanged ones don't. | v1 |
 | LIN-23 | Captains can export their Team's Lineups. | v1 |
 | LIN-24 | **Digital simultaneous exchange** (both Captains lock, then both Lineups are revealed together, with no peeking) is designed for but deferred. The state model above must accommodate it without migration of existing records. | Later (Phase 6) |
+
+### 7.4 Movement Exceptions
+
+| ID | Requirement | Priority |
+|---|---|---|
+| LIN-27 | When no other available Player fits, a Captain may mark a Player in a Lineup with a **Movement Exception**, giving a required reason. Whether no other option exists is the Captain's judgement, and the backend doesn't check it (ADR-012). | v1 |
+| LIN-28 | A Movement Exception lifts LIN-04 and LIN-25 for that Player, so they may play on any Court. LIN-05 and LIN-26 still apply. Example: an Assigned 3 Player who is the strongest available Player may play Court 1. | v1 |
+| LIN-29 | **Return from an exception:** if a Player's most recent Appearance was under a Movement Exception, LIN-25 doesn't apply to their next Appearance. Any Court eligible for their Assigned Court (LIN-04) is valid, and no new exception is needed. Example: an Assigned 3 Player who played Court 1 under an exception may play Court 2, 3, or 4 next time. | v1 |
+| LIN-30 | Movement Exceptions are part of the Lineup draft and are audited (AUD-01). An Administrator who judges an exception unjustified may record a Lineup Violation for that Court (PEN-01). Whether opposing Captains see an exception on an exchanged Lineup is OQ-13. | v1 |
 
 ## 8. Match format, scoring and penalties
 
@@ -209,7 +220,7 @@ A **Lineup** is **valid** when all of these hold:
 |---|---|---|
 | CRS-01 | Court Results are classified automatically only when every Set played was completed: 2–0 or 2–1 in Sets is a win/loss, and 1–1 is a tie. | v1 |
 | CRS-02 | Any Court Match containing a timed Set is marked **Needs Classification**. An Administrator chooses win/tie/loss for it (OQ-1). Power for that Court's Players waits until it is classified. | v1 |
-| CRS-03 | If a Team's Lineup is missing, Team Points still apply to both Teams. Power for that Team's Players waits until an Administrator enters the Lineup, and the other Team's Players receive Power normally. | v1 |
+| CRS-03 | If a Team's Lineup is missing, Team Points still apply to both Teams. Power for that Team's Players waits until an Administrator enters the Lineup, and the other Team's Players receive Power normally. Until then, that Team's later Lineups are `validity_unknown` and can't be locked, though drafts and Availability still work (LIN-07). | v1 |
 
 ### 8.5 Violations and adjustments
 
@@ -268,7 +279,7 @@ Standings and statistics are derived from these records.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| AUD-01 | Audited actions: roster changes, account creation and edits, Assigned-Court changes, Lineup creation, lock, exchange, and admin edits, Availability changes, Score Submissions, confirmations, disputes, and resolutions, Court Result classifications, violations and adjustments, Power adjustments, schedule changes and Rescheduling, and settings changes. | v1 |
+| AUD-01 | Audited actions: roster changes, account creation and edits, Assigned-Court changes, Lineup creation, lock, exchange, and admin edits, Movement Exceptions, Availability changes, Score Submissions, confirmations, disputes, and resolutions, Court Result classifications, violations and adjustments, Power adjustments, schedule changes and Rescheduling, and settings changes. | v1 |
 | AUD-02 | Each audit event records the actor, action, affected record, timestamp, before/after values where practical, and the reason (required for every administrator bypass or correction). | v1 |
 | AUD-03 | Audit events are append-only and visible to Administrators. | v1 |
 
@@ -287,7 +298,7 @@ The backend (and, where practical, database constraints) must guarantee:
 
 - A Player has at most one active Season Roster Entry per Season.
 - A Team has exactly two Captains in an active Season.
-- A locked Lineup has 8 distinct Players, 2 per Court, all eligible, with strictly increasing Combined PPG.
+- A locked Lineup has 8 distinct Players, 2 per Court, all eligible and within the movement limit (or under a Movement Exception, or returning from one), with strictly increasing Combined PPG and no winning pair below a losing pair (LIN-26).
 - Captains can't modify a locked or exchanged Lineup, a frozen Roster, or an Assigned Court after its deadline.
 - A Player receives at most one live Power award per Team Match.
 - One Lineup per Team per Team Match, and one official score revision current per Team Match.
@@ -297,7 +308,7 @@ The backend (and, where practical, database constraints) must guarantee:
 Automated tests must cover at least the following.
 
 - **Power:** win, tie, and loss on each Court; PPG after multiple Appearances; Starting PPG equals the Assigned Court before the first Appearance, follows an Assigned-Court change, and disappears after the first Appearance (e.g. Assigned 2, win on Court 3 → PPG 3); no change without an Appearance; no award for violation-denied Players; no double award on re-processing or correction; exact arithmetic (no float drift).
-- **Lineup validation:** a valid lineup; 7 and 9 Players; a duplicate Player; a wrong count on a Court; a Player from another Team; Assigned 1 on Court 3; Assigned 2 on Court 4; valid adjacent placements; equal adjacent Combined PPG; wrong ordering; `validity_unknown` when the Preceding Team Match isn't final; Preceding Team Match after Rescheduling; first Team Match uses Starting PPG; lock blocked unless valid; modification after lock.
+- **Lineup validation:** a valid lineup; 7 and 9 Players; a duplicate Player; a wrong count on a Court; a Player from another Team; Assigned 1 on Court 3; Assigned 2 on Court 4; valid adjacent placements; equal adjacent Combined PPG; wrong ordering; `validity_unknown` when the Preceding Team Match isn't final; `validity_unknown` when an older Team Match is missing this Team's Lineup but the Preceding Team Match is final; the opponent's missing Lineup doesn't block this Team; Preceding Team Match after Rescheduling; first Team Match uses Starting PPG; lock blocked unless valid; modification after lock; movement of one Court allowed and two rejected; movement measured from the Player's last Appearance when they sat out the Preceding Team Match; no movement limit before the first Appearance; a Movement Exception allows any Court but still enforces PPG ordering and the winning-pair rule; an exception without a reason is rejected; return from an exception to any eligible Court; an intact winning pair placed below an intact losing pair is rejected; split pairs allowed; tied pairs unconstrained.
 - **Scoring:** completed Set won and lost; timed Set with a 2-Game lead, a tie, and a 1-Game difference; three completed Sets; the 6-per-Court and 24-per-Team-Match maximums; violation forfeit; admin adjustment; auto-classification versus Needs Classification.
 - **Score Submission:** first submission wins (either Team); confirm; dispute keeps the official score; admin correction recalculates; no edit after submission; missing Lineup doesn't block.
 - **Permissions:** own Team access; other Team blocked (including by changing IDs); Captain tools; opponent view excludes drafts, Availability, and Assigned Courts; admin full access; non-admin blocked from admin operations.
@@ -321,3 +332,4 @@ League policies not yet decided. Each one has an interim behavior that the app i
 | OQ-10 | How are database backups performed and retained? | Undecided; must be settled before go-live (Roadmap Phase 4 exit). |
 | OQ-11 | Will the league allow roster changes or Assigned-Court changes after the deadlines in practice? | The software lets Administrators do it with a reason (ROS-03, ROS-05). |
 | OQ-12 | Is there a league guideline for a brand-new Player's Starting PPG? | **Resolved (2026-11-23):** Starting PPG is the Assigned Court number for every Player (PWR-03, ADR-011). |
+| OQ-13 | Do opposing Captains see Movement Exceptions (and their reasons) on an exchanged Lineup? | No. Only the Team's Captains and Administrators see them (LIN-30). |

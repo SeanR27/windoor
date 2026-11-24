@@ -67,7 +67,7 @@ These hold the league's rules. They are deterministic, test-first (see AGENTS.md
 | Function (module) | In → Out |
 |---|---|
 | `eligible_courts(assigned)` (lineups) | 1–4 → set of Courts |
-| `validate_lineup(slots, roster, ppgs, preceding_final)` (lineups) | → `valid` / `invalid` / `validity_unknown`, plus per-Court findings with reasons |
+| `validate_lineup(slots, roster, ppgs, earlier_matches_final, previous_appearances, preceding_pair_results)` (lineups) | → `valid` / `invalid` / `validity_unknown`, plus per-Court findings with reasons |
 | `preceding_team_match(team, match, schedule)` (lineups) | → TeamMatch or none |
 | `set_points(set_score)` (results) | → (home_h, away_h) |
 | `court_points(sets)` (results) | → (home_h, away_h), max 12 half-points each |
@@ -84,7 +84,7 @@ Modules call each other only through the public service functions exported from 
 
 Key flows:
 
-- **Lineup validation.** `lineups` asks `teams` for roster entries and Assigned Courts, `power` for current PPGs, and `results` for whether the Preceding Team Match has final Power for the Team. Then it runs `validate_lineup`.
+- **Lineup validation.** `lineups` asks `teams` for roster entries and Assigned Courts, `power` for current PPGs, and `results` for whether every earlier Team Match in the Season has final Power for the Team (LIN-07) and for the Preceding Team Match's Court Results. It reads each Player's most recent earlier Appearance (Playing Court and Movement Exception) from its own Lineups. Then it runs `validate_lineup`.
 - **Result processing** (REQUIREMENTS §8.6). Inside one transaction, `results.record_revision(...)` computes points and Court Results, then calls `power.apply_revision(team_match, revision, appearances)`. That function reverses the previous revision's awards and writes the new ones, idempotent by the unique key. `results` gets the Appearances (who played which Court) from `lineups`.
 - **Rescheduling.** `schedule.reschedule(...)` updates the date, records a RescheduleEvent, and calls `lineups.reset_availability(team_match)`.
 - **Audit.** Services call `audit.record(...)` inside the same transaction as the change, so an audited change and its audit row commit together.

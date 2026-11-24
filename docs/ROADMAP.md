@@ -43,7 +43,7 @@ Within a phase, build one vertical slice end-to-end (domain → service → API 
 
 - `power`: the ledger read side and PPG derivation (PWR-02, PWR-04, PWR-09), so that PPG exists for validation.
 - Availability (AVL-01–07).
-- The lineup domain: eligibility, ordering, Preceding Team Match, and `validity_unknown` (LIN-01–12).
+- The lineup domain: eligibility, ordering, Preceding Team Match, and `validity_unknown` (LIN-01–12), plus the movement limit, the winning-pair rule, and Movement Exceptions (LIN-25–30).
 - The planner UI with backend validation (LIN-13–16, ADR-005).
 - Lock with snapshot, automatic exchange at start time, and admin unlock, edit, or entry (LIN-17–22).
 - Lineup export (LIN-23).
