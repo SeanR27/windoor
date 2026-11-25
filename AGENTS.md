@@ -66,3 +66,17 @@ npm run build
 - Never commit secrets, `.env` files, or the SQLite database (`backend/data/*.db`).
 - Never log passwords, session tokens, activation or reset tokens, or cookies.
 - Don't collect new personal data fields without a requirement (USR-06).
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as local markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), recorded as a `Status:` line in each issue file. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` at the root, and ADRs in `docs/DECISIONS.md`. See `docs/agents/domain.md`.
